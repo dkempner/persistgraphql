@@ -159,6 +159,31 @@ describe("ExtractGQL", () => {
       assert.equal(Object.keys(map)[0], print(document));
     });
 
+    it("should throw on a document with same named fragments", () => {
+      const myegql = new ExtractGQL({ inputFilePath: "empty" });
+      const document = gql`
+        query authorList {
+          author {
+            firstName
+            lastName
+          }
+        }
+        fragment pointlessFragment on Author {
+          firstName
+          lastName
+        }
+        fragment pointlessFragment on Author {
+          firstName
+        }
+      `;
+      const map = egql.createMapFromDocument(document);
+      assert.equal(
+        Object.keys(map)[0],
+        // @ts-ignore
+        print(createDocumentFromQuery(document.definitions[0]))
+      );
+    });
+
     it("should be able to handle a document with unused fragments", () => {
       const myegql = new ExtractGQL({ inputFilePath: "empty" });
       const document = gql`

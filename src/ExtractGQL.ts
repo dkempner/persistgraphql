@@ -142,6 +142,7 @@ export class ExtractGQL {
   // Create an OutputMap from a GraphQL document that may contain
   // queries, mutations and fragments.
   public createMapFromDocument(document: DocumentNode): OutputMap {
+    this.validateParsedDoc(document);
     const transformedDocument = this.applyQueryTransformers(document);
     const queryDefinitions = getOperationDefinitions(transformedDocument);
     const result: OutputMap = {};
@@ -178,6 +179,7 @@ export class ExtractGQL {
   // Creates an OutputMap from an array of GraphQL documents read as strings.
   public createOutputMapFromString(docString: string): OutputMap {
     const doc = parse(docString);
+    this.validateParsedDoc(doc);
     const docMap = separateOperations(doc);
 
     const resultMaps = Object.keys(docMap).map((operationName) => {
@@ -206,6 +208,7 @@ export class ExtractGQL {
     const names = new Set<string>();
 
     fragments.forEach((fragment) => {
+      console.log(fragment.name.value);
       if (names.has(fragment.name.value)) {
         throw new Error(`Duplicate fragment name: ${fragment.name.value}`);
       }
