@@ -208,7 +208,6 @@ export class ExtractGQL {
     const names = new Set<string>();
 
     fragments.forEach((fragment) => {
-      console.log(fragment.name.value);
       if (names.has(fragment.name.value)) {
         throw new Error(`Duplicate fragment name: ${fragment.name.value}`);
       }
