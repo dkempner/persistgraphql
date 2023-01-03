@@ -11,6 +11,7 @@ import {
   print,
   DefinitionNode,
   separateOperations,
+  Location,
 } from "graphql";
 
 import {
@@ -205,13 +206,21 @@ export class ExtractGQL {
       this.isFragmentDefinition(d)
     ) as FragmentDefinitionNode[];
 
-    const names = new Set<string>();
+    // A map fragmentName -> [normalized source]
+    const fragmentSourceMap = new Map<string, Set<string> | undefined>();
 
+    // Check for duplicate fragment names with different sources
     fragments.forEach((fragment) => {
-      if (names.has(fragment.name.value)) {
+      const sourceKey = cacheKeyFromLoc(fragment.loc);
+      const sourceKeySet = fragmentSourceMap.get(fragment.name.value);
+      if (sourceKeySet && !sourceKeySet.has(sourceKey)) {
         throw new Error(`Duplicate fragment name: ${fragment.name.value}`);
       }
-      names.add(fragment.name.value);
+      if (!sourceKeySet) {
+        const sourceKeySet = new Set<string>();
+        sourceKeySet.add(sourceKey);
+        fragmentSourceMap.set(fragment.name.value, sourceKeySet);
+      }
     });
   }
 
@@ -439,3 +448,14 @@ export const main = (argv: YArgsv) => {
 
   new ExtractGQL(options).extract();
 };
+
+// Strip insignificant whitespace
+// Note that this could do a lot more, such as reorder fields etc.
+function normalize(string: string) {
+  return string.replace(/[\s,]+/g, " ").trim();
+}
+
+function cacheKeyFromLoc(loc?: Location) {
+  if (!loc) return "";
+  return normalize(loc.source.body.substring(loc.start, loc.end));
+}
