@@ -449,6 +449,7 @@ export const main = (argv: YArgsv) => {
   new ExtractGQL(options).extract();
 };
 
+// Below is copypasta'd from https://github.com/apollographql/graphql-tag/blob/main/src/index.ts#L31-L69
 // Strip insignificant whitespace
 // Note that this could do a lot more, such as reorder fields etc.
 function normalize(string: string) {
